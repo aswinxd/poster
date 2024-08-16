@@ -14,7 +14,7 @@ bot_token = '7060907933:AAEChdksWb4ES_RS5Wz083XrcDySiyxiJ18'
 client = TelegramClient('user_session', api_id, api_hash)
 
 # Start the bot session
-bot = TelegramClient('bot_session', api_id, api_hash).start(bot_token=bot_token)
+bot = TelegramClient('bot_session', api_id, api_hash)
 
 # Initialize MongoDB client
 mongo_client = motor.motor_asyncio.AsyncIOMotorClient('mongodb+srv://forwd:forwdo@cluster0.nkmhi9a.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
@@ -122,12 +122,13 @@ async def main():
     await start_user_session()
     print("User session started successfully!")
 
-    # Start the bot
-    bot.start(bot_token=bot_token)
+    # Start the bot and wait for it to run indefinitely
+    await bot.start(bot_token=bot_token)
     print("Bot session started!")
 
-    # Keep the event loop running
-    await asyncio.get_event_loop().run_forever()
+    # Keep both running
+    await client.run_until_disconnected()
+    await bot.run_until_disconnected()
 
 # Run the event loop
 if __name__ == '__main__':
