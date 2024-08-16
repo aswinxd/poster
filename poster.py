@@ -4,32 +4,18 @@ from telethon.errors import FloodWaitError
 import asyncio
 import motor.motor_asyncio
 import re
-
-# Your API ID, API hash, and bot token
 api_id = "22181658"
 api_hash = '3138df6840cbdbc28c370fd29218139a'
 bot_token = '7060907933:AAEChdksWb4ES_RS5Wz083XrcDySiyxiJ18'
-
-# Initialize the Telegram client and bot
 client = TelegramClient('user_session', api_id, api_hash)
-
-# Start the bot session
 bot = TelegramClient('bot_session', api_id, api_hash)
-
-# Initialize MongoDB client
 mongo_client = motor.motor_asyncio.AsyncIOMotorClient('mongodb+srv://mdalizadeh16:lavos@cluster0.u21tcwa.mongodb.net/?retryWrites=true&w=majority')
 db = mongo_client['telegram_bot']
 collection = db['schedules']
-
-# Dictionary to keep track of tasks
 tasks = {}
-
-# Function to start the user session
 async def start_user_session():
     print("Starting user session...")
-    await client.start()  # Will prompt for phone and OTP if needed
-
-# Function to forward messages
+    await client.start()
 async def forward_messages(user_id, schedule_name, source_channel_id, destination_channel_id, batch_size, delay):
     post_counter = 0
 
@@ -38,8 +24,7 @@ async def forward_messages(user_id, schedule_name, source_channel_id, destinatio
             if post_counter >= batch_size:
                 await asyncio.sleep(delay)
                 post_counter = 0
-
-            # Check if the message is a photo, video, or document
+                
             if isinstance(message.media, (MessageMediaPhoto, MessageMediaDocument)):
                 try:
                     await client.send_message(int(destination_channel_id), message)
@@ -52,8 +37,6 @@ async def forward_messages(user_id, schedule_name, source_channel_id, destinatio
 
             if schedule_name not in tasks[user_id] or tasks[user_id][schedule_name].cancelled():
                 break
-
-# Event handler for starting the bot
 @bot.on(events.NewMessage(pattern='/start'))
 async def start(event):
     user_id = event.sender_id
@@ -91,8 +74,6 @@ async def start(event):
         if confirmation.text.lower() != 'yes':
             await conv.send_message('Schedule setup cancelled.')
             return
-
-        # Store the schedule in the MongoDB collection
         await collection.update_one(
             {'user_id': user_id},
             {'$push': {
@@ -111,25 +92,14 @@ async def start(event):
 
         if user_id not in tasks:
             tasks[user_id] = {}
-
-        # Start forwarding messages
         task = asyncio.create_task(forward_messages(user_id, schedule_name.text, int(source_channel_id.text), int(destination_channel_id.text), int(post_limit.text), int(delay.text)))
         tasks[user_id][schedule_name.text] = task
-
-# Run the user session and bot concurrently
 async def main():
-    # Start user session and bot
     await start_user_session()
-    print("User session started successfully!")
-
-    # Start the bot and wait for it to run indefinitely
+    print("user started ")
     await bot.start(bot_token=bot_token)
-    print("Bot session started!")
-
-    # Keep both running
+    print("Bot started")
     await client.run_until_disconnected()
     await bot.run_until_disconnected()
-
-# Run the event loop
 if __name__ == '__main__':
     asyncio.run(main())
