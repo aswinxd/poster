@@ -6,7 +6,7 @@ import motor.motor_asyncio
 import re
 api_id = "22181658"
 api_hash = '3138df6840cbdbc28c370fd29218139a'
-bot_token = ''
+bot_token = '6765987978:AAHhjKgNVsLmXJ4BvqoTvlE3Qqp0tc-qEoM'
 client = TelegramClient('user_session', api_id, api_hash)
 bot = TelegramClient('bot_session', api_id, api_hash)
 mongo_client = motor.motor_asyncio.AsyncIOMotorClient('mongodb+srv://mdalizadeh16:lavos@cluster0.u21tcwa.mongodb.net/?retryWrites=true&w=majority')
